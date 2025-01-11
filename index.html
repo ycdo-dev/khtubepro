@@ -1,26 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+      <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pro YouTube Viewer</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
+        :root {
+            --primary-color: #ff0000;
+            --background: #0f0f0f;
+            --surface: #1f1f1f;
+            --surface-light: #272727;
+            --text: #ffffff;
+            --text-secondary: #aaaaaa;
+            --border: #303030;
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Roboto', Arial, sans-serif;
+            font-family: 'Roboto', system-ui, -apple-system, sans-serif;
         }
 
         body {
-            background: #0f0f0f;
-            color: white;
+            background: var(--background);
+            color: var(--text);
+            line-height: 1.6;
         }
 
         .header {
             background: rgba(15, 15, 15, 0.95);
-            padding: 15px;
+            padding: 15px 30px;
             display: flex;
             align-items: center;
             gap: 20px;
@@ -28,16 +39,28 @@
             top: 0;
             z-index: 100;
             backdrop-filter: blur(10px);
-            border-bottom: 1px solid #272727;
+            border-bottom: 1px solid var(--border);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
         }
 
         .logo {
-            color: red;
-            font-size: 24px;
-            font-weight: bold;
+            color: var(--primary-color);
+            font-size: 20px;
+            font-weight: 700;
             display: flex;
             align-items: center;
             gap: 8px;
+            text-decoration: none;
+            transition: transform 0.2s ease;
+        }
+
+        .logo:hover {
+            transform: scale(1.05);
+        }
+
+        .logo i {
+            font-size: 24px;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
         }
 
         .search-box {
@@ -45,49 +68,39 @@
             flex: 1;
             max-width: 600px;
             position: relative;
+            margin: 0 auto;
         }
 
         .search-input {
             flex: 1;
-            padding: 12px 15px;
-            border: 1px solid #303030;
+            padding: 12px 20px;
+            border: 1px solid var(--border);
             border-radius: 25px 0 0 25px;
             background: #121212;
-            color: white;
+            color: var(--text);
             font-size: 16px;
-            transition: border-color 0.2s;
+            transition: all 0.3s ease;
         }
 
         .search-input:focus {
-            border-color: #1c62b9;
             outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(255, 0, 0, 0.1);
         }
 
         .search-button {
             padding: 12px 25px;
-            border: 1px solid #303030;
+            border: 1px solid var(--border);
             border-left: none;
             border-radius: 0 25px 25px 0;
-            background: #222;
-            color: white;
+            background: var(--surface);
+            color: var(--text);
             cursor: pointer;
-            transition: background 0.2s;
+            transition: all 0.3s ease;
         }
 
         .search-button:hover {
-            background: #303030;
-        }
-
-        .loading-indicator {
-            position: absolute;
-            right: 70px;
-            top: 50%;
-            transform: translateY(-50%);
-            display: none;
-        }
-
-        .loading .loading-indicator {
-            display: block;
+            background: var(--surface-light);
         }
 
         .main-content {
@@ -98,14 +111,7 @@
 
         .content-grid {
             display: grid;
-            grid-template-columns: 1fr 350px;
             gap: 30px;
-        }
-
-        .video-section {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
         }
 
         .video-container {
@@ -113,9 +119,9 @@
             padding-bottom: 56.25%;
             height: 0;
             background: #000;
-            border-radius: 15px;
+            border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
         }
 
         .video-container iframe {
@@ -124,75 +130,72 @@
             left: 0;
             width: 100%;
             height: 100%;
-            border: none;
+            border: 0;
         }
 
         .video-info {
-            background: #1f1f1f;
-            padding: 20px;
-            border-radius: 15px;
-            display: none;
+            background: var(--surface);
+            padding: 25px;
+            border-radius: 12px;
+            margin-top: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
         }
 
         .video-info.active {
-            display: block;
+            opacity: 1;
+            transform: translateY(0);
         }
 
         .video-title {
-            font-size: 20px;
-            font-weight: bold;
-            margin-bottom: 10px;
+            font-size: 24px;
+            margin-bottom: 15px;
+            line-height: 1.4;
         }
 
         .video-stats {
             display: flex;
             gap: 20px;
-            color: #aaa;
-            font-size: 14px;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
         }
 
         .video-stat {
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 8px;
+            color: var(--text-secondary);
         }
 
         .channel-info {
             display: flex;
             align-items: center;
-            gap: 10px;
-            padding-top: 15px;
-            border-top: 1px solid #303030;
-        }
-
-        .channel-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: #303030;
+            gap: 15px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
         }
 
         .search-results {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 20px;
-            padding: 20px 0;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            margin-top: 30px;
         }
 
         .search-item {
             cursor: pointer;
-            border-radius: 15px;
+            border-radius: 12px;
             overflow: hidden;
-            background: #1f1f1f;
+            background: var(--surface);
             transition: all 0.3s ease;
-            position: relative;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
 
         .search-item:hover {
             transform: translateY(-5px);
-            background: #272727;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
         }
 
         .search-thumbnail {
@@ -206,7 +209,7 @@
             bottom: 8px;
             right: 8px;
             background: rgba(0, 0, 0, 0.8);
-            padding: 3px 6px;
+            padding: 3px 8px;
             border-radius: 4px;
             font-size: 12px;
         }
@@ -216,46 +219,40 @@
         }
 
         .search-title {
-            font-size: 16px;
+            font-weight: 600;
             margin-bottom: 8px;
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
-            line-height: 1.4;
         }
 
         .search-channel {
-            color: #aaa;
+            color: var(--text-secondary);
             font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            margin-bottom: 8px;
         }
 
         .search-meta {
             display: flex;
-            gap: 15px;
-            color: #aaa;
+            justify-content: space-between;
+            color: var(--text-secondary);
             font-size: 13px;
-            margin-top: 8px;
         }
 
         .playlist-section {
-            background: #1f1f1f;
-            border-radius: 15px;
+            background: var(--surface);
+            border-radius: 12px;
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            height: calc(100vh - 100px);
-            position: sticky;
-            top: 80px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
         }
 
         .playlist-header {
             padding: 20px;
-            background: #272727;
-            border-bottom: 1px solid #303030;
+            background: var(--surface-light);
+            border-bottom: 1px solid var(--border);
         }
 
         .playlist {
@@ -270,21 +267,24 @@
             padding: 12px;
             cursor: pointer;
             border-radius: 10px;
-            transition: background 0.2s;
-            position: relative;
+            transition: all 0.3s ease;
+            background: var(--background);
+            margin-bottom: 8px;
         }
 
         .playlist-item:hover {
-            background: #272727;
+            background: var(--surface-light);
         }
 
         .playlist-item.active {
-            background: #303030;
+            background: var(--primary-color);
+            color: white;
         }
 
         .playlist-thumbnail {
             width: 120px;
-            border-radius: 8px;
+            border-radius: 6px;
+            object-fit: cover;
         }
 
         .playlist-info {
@@ -293,7 +293,7 @@
         }
 
         .playlist-title {
-            font-size: 14px;
+            font-weight: 500;
             margin-bottom: 5px;
             display: -webkit-box;
             -webkit-line-clamp: 2;
@@ -302,42 +302,42 @@
         }
 
         .playlist-channel {
-            color: #aaa;
-            font-size: 12px;
+            color: var(--text-secondary);
+            font-size: 13px;
         }
 
-        .playlist-duration {
-            position: absolute;
-            bottom: 8px;
-            right: 8px;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 2px 4px;
-            border-radius: 3px;
-            font-size: 11px;
+        .loading .search-input {
+            background-image: linear-gradient(90deg, #121212 0%, #272727 50%, #121212 100%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
         }
 
-        .spinner {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 2px solid #ffffff3d;
-            border-top: 2px solid #fff;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
+        /* Desktop Layout */
+        @media (min-width: 1024px) {
+            .content-grid {
+                grid-template-columns: minmax(0, 1fr) 400px;
+            }
+
+            .playlist-section {
+                height: calc(100vh - 100px);
+                position: sticky;
+                top: 80px;
+            }
         }
 
-        @media (max-width: 1200px) {
+        /* Tablet Layout */
+        @media (min-width: 768px) and (max-width: 1023px) {
             .content-grid {
                 grid-template-columns: 1fr;
             }
-            
+
             .playlist-section {
                 height: 400px;
-                position: static;
             }
 
             .search-results {
@@ -345,23 +345,85 @@
             }
         }
 
-        /* Scrollbar Styling */
+        /* Mobile Layout */
+        @media (max-width: 767px) {
+            .header {
+                padding: 10px 15px;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            .search-box {
+                order: 2;
+                width: 100%;
+            }
+
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .playlist-section {
+                height: 300px;
+            }
+
+            .search-results {
+                grid-template-columns: 1fr;
+            }
+
+            .video-stats {
+                gap: 15px;
+            }
+
+            .video-title {
+                font-size: 20px;
+            }
+        }
+
         ::-webkit-scrollbar {
             width: 8px;
-            height: 8px;
         }
 
         ::-webkit-scrollbar-track {
-            background: #1f1f1f;
+            background: var(--surface);
         }
 
         ::-webkit-scrollbar-thumb {
-            background: #373737;
+            background: var(--surface-light);
             border-radius: 4px;
         }
 
         ::-webkit-scrollbar-thumb:hover {
-            background: #474747;
+            background: var(--border);
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--surface);
+            color: var(--text);
+            padding: 12px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            display: none;
+        }
+
+        .toast.show {
+            display: block;
+            animation: toast 0.3s ease forwards;
+        }
+
+        @keyframes toast {
+            from {
+                transform: translate(-50%, 100%);
+                opacity: 0;
+            }
+            to {
+                transform: translate(-50%, 0);
+                opacity: 1;
+            }
         }
     </style>
 </head>
